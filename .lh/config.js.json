@@ -1,0 +1,26 @@
+{
+    "sourceFile": "config.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1703175329150,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1703175380323,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,8 @@\n // RPC地址\n-const RPC_NODE = 'https://avalanche-mainnet.infura.io/v3/52a075204b4c48f2ac2c5bc0f9a5b0f0'\n+const RPC_NODE = 'https://avalanche-mainnet.infura.io/v3/32a075204b4c48f2ac2c5bc0f9a5b0f0'\n // 主钱包私钥\n-const PRIVATE_KEY = '12345mb9462790e20d08840932291804314b0e48635ac12965f4e32f9847c1bf'\n+const PRIVATE_KEY = '123456b9462790e20d08840932291804314b0e48635ac12965f4e32f9847c1bf'\n \n // 钱包存储路径\n const WALLET_PATH = './wallets.json'\n // 钱包生成数量\n"
+                },
+                {
+                    "date": 1703175386484,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,6 @@\n // RPC地址\n-const RPC_NODE = 'https://avalanche-mainnet.infura.io/v3/32a075204b4c48f2ac2c5bc0f9a5b0f0'\n+const RPC_NODE = 'https://avalanche-mainnet.infura.io/v3/345678904b4c48f2ac2c5bc0f9a5b0f0'\n // 主钱包私钥\n const PRIVATE_KEY = '123456b9462790e20d08840932291804314b0e48635ac12965f4e32f9847c1bf'\n \n // 钱包存储路径\n"
+                }
+            ],
+            "date": 1703175329150,
+            "name": "Commit-0",
+            "content": "// RPC地址\nconst RPC_NODE = 'https://avalanche-mainnet.infura.io/v3/52a075204b4c48f2ac2c5bc0f9a5b0f0'\n// 主钱包私钥\nconst PRIVATE_KEY = '12345mb9462790e20d08840932291804314b0e48635ac12965f4e32f9847c1bf'\n\n// 钱包存储路径\nconst WALLET_PATH = './wallets.json'\n// 钱包生成数量\nconst WALLET_COUNT = 10\n\n// 铭文memo\nconst MINT_MEMO = 'data:,{\"p\":\"injrc-20\",\"op\":\"mint\",\"tick\":\"INJS\",\"amt\":\"1000\"}'\n// 自转数量\nconst MINT_TRANSFER_AMOUNT = 0.0001\n// Mint次数\nconst MINT_TIMES = 1\n// Mint后等待时间, 单位毫秒\nconst MINT_WAIT = 1000\n\n// 发送原生代币数量\nconst TRANSFER_AMOUNT = 0.001\n\n// 交易手续费, 单位gwei\nconst GAS_PRICE = 100\n// 交易手续费上限\nconst GAS_LIMIT = 30000\n\nexport default {\n    RPC_NODE,\n    PRIVATE_KEY,\n    WALLET_COUNT,\n    WALLET_PATH,\n    TRANSFER_AMOUNT,\n    GAS_PRICE,\n    GAS_LIMIT,\n    MINT_MEMO,\n    MINT_TRANSFER_AMOUNT,\n    MINT_TIMES,\n    MINT_WAIT\n}"
+        }
+    ]
+}

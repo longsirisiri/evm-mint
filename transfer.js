@@ -1,0 +1,37 @@
+import config from "./config.js";
+import fs from 'fs';
+import ethers from "ethers";
+
+async function main() {
+    const provider = new ethers.providers.JsonRpcProvider(config.RPC_NODE);
+    const mainWallet = new ethers.Wallet(config.PRIVATE_KEY, provider);
+    const balance = await provider.getBalance(mainWallet.address)
+    const balanceInEther = ethers.utils.formatEther(balance);
+    console.log(`主钱包地址: ${mainWallet.address} 余额: ${balanceInEther}`)
+
+    let path = config.WALLET_PATH
+    if (!fs.existsSync(path))
+        throw new Error('钱包文件不存在')
+
+    const wallets = JSON.parse(fs.readFileSync(path, 'utf8'));
+    const recipients = wallets.map(wallet => wallet.address);
+    for (const recipient of recipients) {
+        console.log(`转账给 ${recipient} ${config.TRANSFER_AMOUNT}`)
+        try {
+            const amount = ethers.utils.parseEther(config.TRANSFER_AMOUNT.toString())
+            const gasPrice = ethers.utils.parseUnits(config.GAS_PRICE.toString(), 'gwei');
+            const gasLimit = config.GAS_LIMIT;
+            const tx = await mainWallet.sendTransaction({
+                to: recipient,
+                value: amount,
+                gasPrice,
+                gasLimit,
+            });
+            console.log(`${recipient}: 转账 ${config.TRANSFER_AMOUNT} 成功: ${tx.hash}`);
+        } catch (error) {
+            console.error(`转账给 ${recipient} 失败: `, error);
+        }
+    }
+}
+
+main()
