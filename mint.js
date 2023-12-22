@@ -48,10 +48,12 @@ async function performTransaction(walletInfo) {
 async function main() {
     let path = config.WALLET_PATH
     let walletData = []
-    if (fs.existsSync(path)) {
-        walletData = JSON.parse(fs.readFileSync(path, 'utf-8'));
-    } else {
-        console.log(`未找到 ${path}, 仅使用配置的主钱包`);
+    if (!fs.existsSync(path)) {
+        throw new Error('钱包文件不存在')
+    }
+    walletData = JSON.parse(fs.readFileSync(path, 'utf-8'));
+    if (walletData.length === 0) {
+        throw new Error('钱包文件内容为空')
     }
 
     const provider = new ethers.providers.JsonRpcProvider(config.RPC_NODE);
@@ -59,11 +61,6 @@ async function main() {
     const balance = await provider.getBalance(mainWallet.address)
     const balanceInEther = ethers.utils.formatEther(balance);
     console.log(`主钱包地址: ${mainWallet.address} 余额: ${balanceInEther}`)
-
-    walletData.push({
-        "address": mainWallet.address,
-        "privateKey": config.PRIVATE_KEY
-    });
 
     Promise.all(walletData.map(wallet => performTransaction(wallet)))
         .then(() => {

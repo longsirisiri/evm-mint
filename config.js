@@ -1,6 +1,7 @@
 // RPC地址
 // const RPC_NODE = 'https://api.avax.network/ext/bc/C/rpc'
-const RPC_NODE = 'https://avalanche-mainnet.infura.io/v3/f9fb09e1be264ec7944a07085a0f3418'
+// const RPC_NODE = 'https://avalanche-mainnet.infura.io/v3/f9fb09e1be264ec7944a07085a0f3418'
+const RPC_NODE = 'https://avalanche-mainnet.infura.io/v3/52a075204b4c48f2ac2c5bc0f9a5b0f0'
 // 主钱包私钥
 const PRIVATE_KEY = ''
 
