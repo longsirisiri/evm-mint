@@ -19,14 +19,19 @@ async function main() {
         console.log(`转账给 ${recipient} ${config.TRANSFER_AMOUNT}`)
         try {
             const amount = ethers.utils.parseEther(config.TRANSFER_AMOUNT.toString())
-            const gasPrice = ethers.utils.parseUnits(config.GAS_PRICE.toString(), 'gwei');
+
+            const currentGasPrice = await wallet.getGasPrice()
+            const gasMultiple = parseInt(String(config.GAS_PRICE_MULTIPLY * 100))
+            const gasPrice = currentGasPrice.div(100).mul(gasMultiple);
             const gasLimit = config.GAS_LIMIT;
-            const tx = await mainWallet.sendTransaction({
+
+            const transaction = {
                 to: recipient,
                 value: amount,
                 gasPrice,
                 gasLimit,
-            });
+            }
+            const tx = await mainWallet.sendTransaction(transaction);
             console.log(`${recipient}: 转账 ${config.TRANSFER_AMOUNT} 成功: ${tx.hash}`);
         } catch (error) {
             console.error(`转账给 ${recipient} 失败: `, error);
