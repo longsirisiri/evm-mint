@@ -10,7 +10,6 @@ async function performTransaction(walletInfo) {
 
     const transferAmount = ethers.utils.parseEther(config.MINT_TRANSFER_AMOUNT.toString())
     const memoData = '0x' + Buffer.from(config.MINT_MEMO, 'utf8').toString('hex');
-    const gasPrice = ethers.utils.parseUnits(config.GAS_PRICE.toString(), 'gwei');
     const gasLimit = config.GAS_LIMIT;
 
     let successCount = 0;
@@ -18,15 +17,21 @@ async function performTransaction(walletInfo) {
 
     while (successCount < config.MINT_TIMES) {
         try {
-            const tx = await wallet.sendTransaction({
+            const currentGasPrice = await wallet.getGasPrice()
+            const gasMultiple = parseInt(String(config.GAS_PRICE_MULTIPLY * 100))
+            const gasPrice = currentGasPrice.div(100).mul(gasMultiple);
+
+            const transaction = {
                 to: wallet.address,
                 value: transferAmount,
                 gasPrice,
                 gasLimit,
                 data: memoData
-            });
+            };
 
+            const tx = await wallet.sendTransaction(transaction);
             console.log(`${wallet.address}, 第 ${successCount + 1} 次操作成功: ${tx.hash}`);
+
             successCount++;
             if (config.MINT_WAIT > 0)
                 await new Promise(resolve => setTimeout(resolve, config.MINT_WAIT));
@@ -46,7 +51,7 @@ async function main() {
     if (fs.existsSync(path)) {
         walletData = JSON.parse(fs.readFileSync(path, 'utf-8'));
     } else {
-        console.log(`未找到 ${walletsFile}, 仅使用配置的主钱包`);
+        console.log(`未找到 ${path}, 仅使用配置的主钱包`);
     }
 
     const provider = new ethers.providers.JsonRpcProvider(config.RPC_NODE);

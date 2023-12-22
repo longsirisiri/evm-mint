@@ -1,7 +1,8 @@
 // RPC地址
-const RPC_NODE = 'https://avalanche-mainnet.infura.io/v3/345678904b4c48f2ac2c5bc0f9a5b0f0'
+// const RPC_NODE = 'https://api.avax.network/ext/bc/C/rpc'
+const RPC_NODE = 'https://avalanche-mainnet.infura.io/v3/f9fb09e1be264ec7944a07085a0f3418'
 // 主钱包私钥
-const PRIVATE_KEY = '123456b9462790e20d08840932291804314b0e48635ac12965f4e32f9847c1bf'
+const PRIVATE_KEY = ''
 
 // 钱包存储路径
 const WALLET_PATH = './wallets.json'
@@ -20,10 +21,10 @@ const MINT_WAIT = 1000
 // 发送原生代币数量
 const TRANSFER_AMOUNT = 0.001
 
-// 交易手续费, 单位gwei
-const GAS_PRICE = 100
+// 交易手续费倍数
+const GAS_PRICE_MULTIPLY = 1.5
 // 交易手续费上限
-const GAS_LIMIT = 30000
+const GAS_LIMIT = 50000
 
 export default {
     RPC_NODE,
@@ -31,7 +32,7 @@ export default {
     WALLET_COUNT,
     WALLET_PATH,
     TRANSFER_AMOUNT,
-    GAS_PRICE,
+    GAS_PRICE_MULTIPLY,
     GAS_LIMIT,
     MINT_MEMO,
     MINT_TRANSFER_AMOUNT,
