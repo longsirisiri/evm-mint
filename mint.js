@@ -1,52 +1,73 @@
-import config from "./config.js";
-import ethers from "ethers";
+import { ethers } from "ethers";
 import fs from 'fs';
+import { sendAndWatchTransaction } from './utils.js';
 
-async function performTransaction(walletInfo) {
-    console.log(`开始Mint: ${walletInfo.address}`)
+// RPC地址
+const RPC_NODE = 'https://goerli.infura.io/v3/52a075204b4c48f2ac2c5bc0f9a5b0f0'
+// 钱包存储路径
+const WALLET_PATH = './wallets.json'
 
-    const provider = new ethers.providers.JsonRpcProvider(config.RPC_NODE);
+// 铭文memo
+const MINT_MEMO = 'data:,{"p":"injrc-20","op":"mint","tick":"INJS","amt":"1000"}'
+// 自转数量, 可以转0
+const MINT_TRANSFER_AMOUNT = 0
+// Mint次数
+const MINT_TIMES = 3
+// Mint后等待时间, 单位毫秒
+const MINT_WAIT = 1000
+// Mint超时时间, 单位秒，超过这个时间还没完成则提高手续费重新提交
+const MINT_TIMEOUT = 5
+
+// 交易手续费递增倍数，交易卡住时会自动调高gas费
+const GAS_PRICE_INCREASE = 0.2
+// 交易手续费递增轮数，交易卡住时会自动调高gas费，超过这个轮数则不再调高
+const GAS_MAX_INCREASE_ROUND = 5
+// 交易手续费上限
+const GAS_LIMIT = 50000
+
+async function performTransaction(walletInfo, provider) {
     const wallet = new ethers.Wallet(walletInfo.privateKey, provider);
+    const nonce = await provider.getTransactionCount(wallet.address, 'pending')
+    console.log(`开始Mint: ${walletInfo.address} 当前Nonce: ${nonce}`)
 
-    const transferAmount = ethers.utils.parseEther(config.MINT_TRANSFER_AMOUNT.toString())
-    const memoData = '0x' + Buffer.from(config.MINT_MEMO, 'utf8').toString('hex');
-    const gasLimit = config.GAS_LIMIT;
+    const transferAmount = ethers.parseEther(MINT_TRANSFER_AMOUNT.toString())
+    const memoData = '0x' + Buffer.from(MINT_MEMO, 'utf8').toString('hex');
+    const gasLimit = GAS_LIMIT;
 
-    let successCount = 0;
-    let attemptCount = 0;
+    const calculateGasPrice = async function (tx, round) {
+        if (round >= GAS_MAX_INCREASE_ROUND)
+            return null
 
-    while (successCount < config.MINT_TIMES) {
-        try {
-            const currentGasPrice = await wallet.getGasPrice()
-            const gasMultiple = parseInt(String(config.GAS_PRICE_MULTIPLY * 100))
-            const gasPrice = currentGasPrice.div(100).mul(gasMultiple);
+        round = round > GAS_MAX_INCREASE_ROUND ? GAS_MAX_INCREASE_ROUND : round
+        const feeData = await wallet.provider.getFeeData()
+        const multiply = 100 + (round + 1) * GAS_PRICE_INCREASE * 100
+        const gasPrice = feeData.gasPrice * BigInt(multiply) / 100n
 
-            const transaction = {
-                to: wallet.address,
-                value: transferAmount,
-                gasPrice,
-                gasLimit,
-                data: memoData
-            };
-
-            const tx = await wallet.sendTransaction(transaction);
-            console.log(`${wallet.address}, 第 ${successCount + 1} 次操作成功: ${tx.hash}`);
-
-            successCount++;
-            if (config.MINT_WAIT > 0)
-                await new Promise(resolve => setTimeout(resolve, config.MINT_WAIT));
-        } catch (error) {
-            console.error(`尝试次数 ${attemptCount + 1} 失败: `, error);
-            attemptCount++;
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
+        return ethers.parseUnits(gasPrice.toString(), 'gwei')
     }
 
-    console.log(`总共尝试次数: ${attemptCount}, 成功次数: ${successCount}`);
+    for (let i = 0; i < MINT_TIMES; i++) {
+        const txData = {
+            to: wallet.address,
+            value: transferAmount,
+            nonce: nonce + i,
+            gasLimit,
+            data: memoData
+        };
+
+        console.log(`${wallet.address} 第 ${i + 1} 次Mint操作...`)
+        await sendAndWatchTransaction(wallet, txData, calculateGasPrice, MINT_TIMEOUT)
+        console.log(`${wallet.address} 第 ${i + 1} 次Mint操作完成`)
+
+        if (MINT_WAIT > 0)
+            await new Promise(resolve => setTimeout(resolve, MINT_WAIT));
+    }
+
+    console.log(`${wallet.address} Mint完成`);
 }
 
 async function main() {
-    let path = config.WALLET_PATH
+    let path = WALLET_PATH
     let walletData = []
     if (!fs.existsSync(path)) {
         throw new Error('钱包文件不存在')
@@ -56,13 +77,8 @@ async function main() {
         throw new Error('钱包文件内容为空')
     }
 
-    const provider = new ethers.providers.JsonRpcProvider(config.RPC_NODE);
-    const mainWallet = new ethers.Wallet(config.PRIVATE_KEY, provider);
-    const balance = await provider.getBalance(mainWallet.address)
-    const balanceInEther = ethers.utils.formatEther(balance);
-    console.log(`主钱包地址: ${mainWallet.address} 余额: ${balanceInEther}`)
-
-    Promise.all(walletData.map(wallet => performTransaction(wallet)))
+    const provider = new ethers.JsonRpcProvider(RPC_NODE);
+    Promise.all(walletData.map(walletInfo => performTransaction(walletInfo, provider)))
         .then(() => {
             console.log("所有操作完成");
         })
