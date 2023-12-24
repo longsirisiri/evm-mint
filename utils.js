@@ -39,7 +39,6 @@ export async function sendAndWatchTransaction(wallet, txData, fnGasPrice, timeou
                 done = true
             } else {
                 console.log(`${wallet.address} ${txData.nonce} error: ${msg}`)
-                console.log(e)
             }
         }
     }
